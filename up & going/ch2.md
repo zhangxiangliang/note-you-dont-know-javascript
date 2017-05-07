@@ -43,6 +43,19 @@ Javascript has typed value, not typed variables. The following built-in types ar
 * The result of any comparison is a strictly `boolean` value (`true` or `false`), regardless of what value types are compared.
 
 #### Coercion
+* Coercion is implicit.
+* Coercion is not evil, nor does it have to be surprising.
+* You can construct with type coercion are quite sesible and understandable, and can even be used to improve the readability of your code.
+
 #### Truthy & Falsy
+* `""`, `0`, `-0`, `NaN`, `null`, `undefined`, `false` (=> falsy).
+* `"hello"`, `42`, `true`, `[]`, `{}`, `function foo() {......}` (=> truthy).
+
 #### Equality
+* `==`, `===`, `!=` and `!==` (=> equality).
+* `===` and `!==` is often called "strict equality".
+* `==` and `!=` is often called "loose equality".
+* If either value in a comparison could be the `true` or `false` value, avoid `==` and use `===`.
+* If either value in a comparison
+
 #### Inequality
