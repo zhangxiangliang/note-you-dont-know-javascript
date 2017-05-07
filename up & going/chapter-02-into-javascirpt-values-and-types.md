@@ -56,6 +56,22 @@ Javascript has typed value, not typed variables. The following built-in types ar
 * `===` and `!==` is often called "strict equality".
 * `==` and `!=` is often called "loose equality".
 * If either value in a comparison could be the `true` or `false` value, avoid `==` and use `===`.
-* If either value in a comparison
+* If either value in a comparison could be of these specific values (`0`, `null`, `""`, or `[]`), avoid `==` and use `===`.
+* In all other cases, you're safe to use `==`. Not only is it safe, but in many cases it simplifies your code in a way that improves readability.
+* `object`, `function`, `array` comparisons will simply check whether the references match, not anything
+about the underlying values.
 
 #### Inequality
+* The `<`, `>`, `<=`, and `>=` operators are used for inequality, will be used with ordinally comparable values like `number`s.
+* If comparable values is `string` using typical alphabetic rules.
+* If comparable values is `string` and only compose by `number`s, will coercion the string to number.
+* If comparable between potentially different value types, is when one of the values cannot be made into a valid number.
+
+```js
+var a = 42;
+var b = "foo";
+
+a < b;      // false => 42 < NaN
+a > b;      // false => 42 > NaN
+a == b;     // false => 42 == NaN
+```
