@@ -23,3 +23,77 @@
 * Even though `bar` function appears to be a reference to `obj.foo`, it's really just another refeerence to `foo` itself.
 
 ### Explicit Binding
+* functions have `call(...)` and `apply(...)` methods. (In their `[[Prototype]]`).
+* `call` and `apply` take first parameter, an object to use for the `this`.
+* If you pass a simple primitive value (if type `string`, `boolean`, or `number`) as the `this` binding, the primitive value is warpped in its object-form (`new String(...)`, `new Boolean(...)`, or `new Number(...)`).This is often referred to as "boxing".
+* With respect to `this` binding, `call(...)` and `bind(...)` are identical. They do behave differently with their additional parameters.
+* But a variation pattern around *explicit binding* actually does the trick.
+
+#### Hard Binding
+* common methods
+
+```js
+function foo() {
+    console.log(this.a);
+};
+var obj = { a : 2 };
+var bar = () => foo.call(obj);
+
+bar.call(window); // 2, so that it cannot be overriden.
+```
+
+* The most typical way to wrap a function with a *hard binding* creates a pass-thru of any arguments passed and any return value received.
+```
+bar = (...arguments) => foo.apply(obj, arguments)
+```
+
+* Another way to express this pattern is to create a re-usable helper.
+```
+bind = (fn, obj) => (...arguments) => fn.apply(obj, arguments)
+```
+
+* Since *hard binding* is such a common pattern, it's provided with a built-in utility as of ES5: `Function.prototype.bind`.
+
+#### API Call "Contexts"
+* Many libraries's functions, and indeed many new built-in functions is the JavaScript language and host environment, provide an optional parameter, usually called "contexts".
+* These various functions almost certainly use *explicit binding*
+
+### `new` Binding
+* In JavaScript, constructors are **just functions** that happen to be called with the `new` operator in front of them.
+* They are not attached to classes, nor are they instantiating a class. They are not even special types of functions.
+* They're just regular functions that are, in essence, hijacked by the use of `new` in their invocation.
+* When a function is invoked with `new` in front of it, otherwise known as a constructor call, the following things are done automatically:
+    1. a brand new object is created (asa, constructed) out of thin air.
+    2. the newly constructed object is `[[Prototype]]`-linked.
+    3. the newly constructed object is set as the `this` binding for that function call.
+    4. unless the function returns its own alternate `object`, the `new`-invoked function call will automatically return the newly constructed object.
+
+## Everything In Order
+### Determining `this`
+
+1. Is the function called with `new` (**new binding**)? If so, `this` is the newly constructed object.
+2. Is the function called with `call` or `apply` (**explicit binding**), even hidden inside a `bind` *hard binding*? If so, `this` is the explicitly specified object.
+3. Is the function called with a context (**implicit binding**), otherwise known as an owning or containing object? If so, `this` is *that* context object.
+4. Otherwise, default the `this` (**default binding**). If in `strict mode`, pick `undefined`, otherwise pick the `global` object.
+
+That's it. That's *all it takes* to understand the rules of `this` binding for normal function calls. Well... almost.
+
+## Binding Exceptions
+
+### Ignored `this`
+1. If you pass `null` or `undefined` as a `this` binding parameter to `call`, `apply` or `bind`, those values are efeectively ignored, and instead the *deafult binding* rule applies to the invocation.
+
+2. Why would you intentionally pass something like `null` for a `this` binding?
+    * It quite common to use `apply(...)` for spreading out arrays of values as parameters to a function call `foo.apply(null, [1,2])`, in ES6 `foo(...[1,2])` equals `foo(1,3)`.
+    * Use `bind(..)` can curry parameters (pre-set values), which can be very helpful.
+
+3. use `null` is a hidden "danger", when a function does make a `this` reference, the `default binding` rule means it might inadvertently reference the `global` object.
+
+#### Safer `this`
+* If we always pass a DMZ object for ignored `this` bindings we don't think we need to care about, we're sure any hidden/unexpected usage of `this` will be restricted to the empty object, which insulates our program's `global` object from side-effects.
+* Since this object is totally empty, I personally like to give it the variable name `ø`.
+* Set `ø` up as totally empty is `Object.create(null)`.
+* `Object.create(null)` is similar to `{ }`, but without the delegation to `Object.prototype`, so it's "more empty" than just `{ }`.
+* `foo.bind(ø, 2)`
+
+
