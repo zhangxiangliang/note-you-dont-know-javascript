@@ -96,4 +96,25 @@ That's it. That's *all it takes* to understand the rules of `this` binding for n
 * `Object.create(null)` is similar to `{ }`, but without the delegation to `Object.prototype`, so it's "more empty" than just `{ }`.
 * `foo.bind(ø, 2)`
 
+### Indirection
+* The *result value* of the assignment expression `p.foo = o.foo` is a reference to just the underlying function object. The effective call-site is just `foo()`, not `p.foo()` or `o.foo()` as you might expect. Per the rules above, the *default binding* rule applies.
 
+### Softening Binding
+* `hard-binding` greatly reduces the flexibility of a function, preventing manual `this` override with either the `implicit binding` or even subsequent `explicit binding` attempts.
+* we can use `soft-binding utility provided here works similarly to the built-in ES5 `bind(..)`. It wraps the specified function in logic that checks the `this` at call-time and if it's `global` or `undefined`, uses a pre-specified alternate *default* (`obj`). Otherwise the `this` is left untouched. It also provides optional currying.
+
+## Lexical `this`
+* arrow-function does not use the 4 rules.
+* While arrow-functions provide an alternative to using `bind(..)` on a function to ensure its `this`, which can seem attractive, it's important to note that they essentially are disabling the traditional `this` mechanism in favor of more widely-understood lexical scoping.
+* If you find yourself writing `this`-style code, but most or all the time, you defeat the `this` mechanism with lexical `self = this` or arrow-function "tricks", perhaps you should either:
+    1. Use only lexical scope and forget the false pretense of `this`-style code.
+    2. Embrace `this`-style mechanisms completely, including using `bind(..)` where necessary, and try to avoid `self = this` and arrow-function "lexical this" tricks.
+
+## Review
+* Four rules can be applied to the call-site, in `this` order of precedence:
+    1. Called with `new`? Use the newly constructed object.
+    2. Called with `call` or `apply` (or `bind`)? Use the specified object.
+    3. Called with a context object owning the call? Use that context object.
+    4. Default: `undefined` in `strict mode`, global object otherwise.
+* Be careful of the `default binding` rules.If want to "safely" ignore a `this` binding, a "DMZ" object like `ø = Object.create(null)` is a good placeholder value that protects the `global` object from unintended side-effects.
+* ES6 arrow-functions use lexical scoping for `this` binding, which means they adopt the `this` binding from its enclosing function call. They are essentially a syntactic of `self = this` in pre-ES6 coding.
